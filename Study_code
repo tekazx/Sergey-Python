@@ -1,0 +1,37 @@
+import pandas as pd
+df = pd.read_csv('yandex_music_project.csv')
+df = df.rename(columns={'  userID':'user_id', 'Track':'track', '  City  ':'city', 'Day': 'day'})
+columns_to_replace = ['track', 'artist', 'genre']
+for col in columns_to_replace:
+    df[col] = df[col].fillna('unknown')
+df = df.drop_duplicates()
+sorted_df = df.sort_values(by='genre', ascending=True)
+sorted_df = sorted_df['genre'].unique()
+df['genre'] = df['genre'].replace('hip', 'hiphop')
+df['genre'] = df['genre'].replace('hop', 'hiphop')
+df['genre'] = df['genre'].replace('hip-hop', 'hiphop')
+sorted_df = df.sort_values(by='genre', ascending=True)
+sorted_df = sorted_df['genre'].unique()
+df_group_city = df.groupby('city')['track'].count()
+df_group_day = df.groupby('day')['track'].count()
+
+def number_tracks(day, city):
+    track_list = df.loc[df['day'] == (day)]
+    track_list = track_list.loc[track_list['city'] == (city)]
+    track_list_count = track_list['user_id'].count()
+    return track_list_count
+moscow_general = df[df['city'] == 'Moscow']
+spb_general = df[df['city'] == 'Saint-Petersburg']
+def genre_weekday(df, day, time1, time2):
+    genre_df = df.loc[df['day'] == (day)]
+    genre_df = genre_df.loc[genre_df['time'] > (time1)]
+    genre_df = genre_df.loc[genre_df['time'] < (time2)]
+    genre_df_grouped = genre_df.groupby('genre')['user_id'].count()
+    genre_df_sorted = genre_df_grouped.sort_values(ascending=False)
+    return genre_df_sorted[:10]
+
+
+moscow_genres=moscow_general.groupby('genre')['genre'].count().sort_values(ascending = False)
+print(moscow_genres)
+spb_genres=spb_general.groupby('genre')['genre'].count().sort_values(ascending = False)
+print(spb_genres)
